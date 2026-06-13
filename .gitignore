@@ -24,7 +24,7 @@ pids
 coverage/
 
 # Build output
-dist/
+# dist/
 build/
 
 # Database files
