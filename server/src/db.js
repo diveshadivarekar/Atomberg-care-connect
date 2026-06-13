@@ -1,62 +1,45 @@
-// db.js — lightweight persistence layer using SQLite (file-based, zero setup)
-const Database = require('better-sqlite3');
-const path = require('path');
+const store = {
+  sessions: [],
+  invites: [],
+  participants: [],
+  chat_messages: [],
+  recordings: [],
+  events: []
+};
 
-const db = new Database(path.join(__dirname, '..', 'atomberg_care.db'));
+module.exports = {
+  exec() {},
 
-db.exec(`
-CREATE TABLE IF NOT EXISTS sessions (
-  id TEXT PRIMARY KEY,
-  title TEXT,
-  created_by TEXT,
-  status TEXT DEFAULT 'created',   -- created | active | ended
-  created_at INTEGER,
-  ended_at INTEGER
-);
+  prepare(sql) {
+    return {
+      run(...args) {
+        console.log('[MOCK RUN]', sql, args);
+        return { changes: 1 };
+      },
 
-CREATE TABLE IF NOT EXISTS invites (
-  token TEXT PRIMARY KEY,
-  session_id TEXT,
-  role TEXT,           -- 'customer'
-  used INTEGER DEFAULT 0,
-  created_at INTEGER
-);
+      get(...args) {
+        console.log('[MOCK GET]', sql, args);
 
-CREATE TABLE IF NOT EXISTS participants (
-  id TEXT PRIMARY KEY,
-  session_id TEXT,
-  role TEXT,           -- 'agent' | 'customer'
-  name TEXT,
-  joined_at INTEGER,
-  left_at INTEGER
-);
+        if (sql.includes('FROM sessions'))
+          return {
+            id: args[0],
+            status: 'active',
+            title: 'Mock Session'
+          };
 
-CREATE TABLE IF NOT EXISTS chat_messages (
-  id TEXT PRIMARY KEY,
-  session_id TEXT,
-  sender_role TEXT,
-  sender_name TEXT,
-  body TEXT,
-  file_url TEXT,
-  file_name TEXT,
-  created_at INTEGER
-);
+        if (sql.includes('FROM invites'))
+          return {
+            token: args[0],
+            session_id: args[1]
+          };
 
-CREATE TABLE IF NOT EXISTS recordings (
-  session_id TEXT PRIMARY KEY,
-  status TEXT DEFAULT 'none',  -- none | in_progress | processing | ready | failed
-  file_path TEXT,
-  started_at INTEGER,
-  ended_at INTEGER
-);
+        return null;
+      },
 
-CREATE TABLE IF NOT EXISTS events (
-  id TEXT PRIMARY KEY,
-  session_id TEXT,
-  type TEXT,
-  payload TEXT,
-  created_at INTEGER
-);
-`);
-
-module.exports = db;
+      all(...args) {
+        console.log('[MOCK ALL]', sql, args);
+        return [];
+      }
+    };
+  }
+};
